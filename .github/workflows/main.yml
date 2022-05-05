@@ -56,7 +56,7 @@ jobs:
         with:
           # relative path to the place where source code with Dockerfile is located
           context: .
-          file: Api.dockerfile
+          file: api.dockerfile
           # Note: tags has to be all lower-case
           tags: fadix95/hetic-api:${{ steps.vars.outputs.sha_short }}
           # build on feature branches, push only on main branch
