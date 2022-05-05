@@ -44,7 +44,7 @@ jobs:
           set -x
           docker version
           container_id=$(docker create fadix95/hetic-model:2ae269f)
-          docker cp "$container_id:model.json" .
+          docker cp "$container_id:/data/model.json" .
           echo "Extracting model version 2ae269f"
           pwd
           ls -l .
