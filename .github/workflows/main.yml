@@ -64,3 +64,12 @@ jobs:
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
+
+      - name: Deploy
+        env:
+          EC2_KEY: ${{ secrets.EC2_KEY }}
+        run: |
+          echo "$EC2_KEY" > api.pem
+          sudo chmod 600 api.pem
+          ssh -i api.pem -oStrictHostKeyChecking=no ubuntu@52.58.181.13 "docker stop api" || true
+          ssh -i api.pem -oStrictHostKeyChecking=no ubuntu@52.58.181.13 "docker run --rm --name api -i -d -p 80:5000 fadix95/hetic-api:latest"
