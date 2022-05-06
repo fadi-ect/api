@@ -4,8 +4,7 @@ on:
   # run it on push to the default repository branch
   push:
     branches: [main, cicd]
-  # run it during pull request
-  pull_request:
+  repository_dispatch:
 
 jobs:
   # define job to build and publish docker image
@@ -29,11 +28,11 @@ jobs:
         with:
           username: fadix95
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+
       - name: Set outputs
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-        
+
       - name: Check outputs
         run: echo ${{ steps.vars.outputs.sha_short }}
 
@@ -43,22 +42,23 @@ jobs:
       - run: |
           set -x
           docker version
-          container_id=$(docker create fadix95/hetic-model:7183d58)
+          model_commit_id=${{ github.event.client_payload.model_commit_id || 'latest' }}
+          container_id=$(docker create fadix95/hetic-model:$model_commit_id)
           docker cp "$container_id:/data/model.json" .
-          echo "Extracting model version 7183d58"
+          echo "Extracting model version $model_commit_id"
           pwd
           ls -l .
 
       ########### DOCKER ##################
-      
+
       - name: Build image and push to Docker Hub and GitHub Container Registry
         uses: docker/build-push-action@v2
         with:
           # relative path to the place where source code with Dockerfile is located
           context: .
-          file: api.dockerfile
+          file: Api.dockerfile
           # Note: tags has to be all lower-case
-          tags: fadix95/hetic-api:${{ steps.vars.outputs.sha_short }}
+          tags: fadix95/hetic-api:latest,fadix95/hetic-api:${{ steps.vars.outputs.sha_short }}
           # build on feature branches, push only on main branch
           push: true # ${{ github.ref == 'refs/heads/main' }}
 
